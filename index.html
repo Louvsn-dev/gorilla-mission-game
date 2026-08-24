@@ -3,1719 +3,2213 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
-<title>Mission 800$ — Le jeu</title>
-
+<title>Mission 800$ — Manga City</title>
 <style>
-*{
-  box-sizing:border-box;
-}
-
+*{box-sizing:border-box}
 html,body{
   margin:0;
   min-height:100%;
-  background:#120f1d;
+  background:#090b14;
+  font-family:Inter,Arial,sans-serif;
   color:#fff;
-  font-family:Arial,sans-serif;
-  overflow:hidden;
+  overflow:hidden
 }
-
-body{
+#wrap{
+  width:100vw;
+  height:100vh;
   display:grid;
   place-items:center;
+  background:radial-gradient(circle at 50% 20%,#222a4c,#090b14 70%)
 }
-
-.wrap{
-  width:min(1180px,100vw);
-  height:100vh;
-  display:flex;
-  flex-direction:column;
-  padding:12px;
-  gap:8px;
-}
-
-.top{
-  display:flex;
-  align-items:center;
-  justify-content:space-between;
-  gap:10px;
-  flex-wrap:wrap;
-}
-
-.title{
-  font-weight:900;
-  letter-spacing:.4px;
-}
-
-.hud{
-  display:flex;
-  gap:8px;
-  flex-wrap:wrap;
-}
-
-.pill{
-  background:#241d32;
-  border:1px solid #45375b;
-  border-radius:999px;
-  padding:7px 11px;
-  font-weight:800;
-  font-size:13px;
-}
-
-.bar{
-  height:10px;
-  background:#241d32;
-  border-radius:99px;
-  overflow:hidden;
-  border:1px solid #45375b;
-}
-
-.fill{
-  height:100%;
-  width:0;
-  background:#ffd43b;
-  transition:width .2s;
-}
-
-.gamebox{
-  position:relative;
-  flex:1;
-  min-height:0;
-  border:2px solid #3f3153;
-  border-radius:18px;
-  overflow:hidden;
-  box-shadow:0 20px 60px #0008;
-  background:#8ed9ff;
-}
-
-.gamebox canvas{
+canvas{
+  width:min(100vw,177.78vh);
+  height:min(100vh,56.25vw);
   display:block;
-  width:100%;
-  height:100%;
+  border-radius:18px;
+  box-shadow:0 18px 70px #000b;
+  touch-action:none
 }
-
-.overlay{
-  position:absolute;
-  inset:0;
-  display:none;
-  align-items:center;
-  justify-content:center;
-  background:#09070bcc;
-  backdrop-filter:blur(5px);
-  z-index:5;
-}
-
-.card{
-  width:min(720px,90%);
-  background:#1d1729;
-  border:2px solid #59456f;
-  border-radius:22px;
-  padding:26px;
-  text-align:center;
-  box-shadow:0 20px 80px #0009;
-}
-
-.card h1{
-  margin:0 0 10px;
-  font-size:clamp(28px,5vw,52px);
-}
-
-.card p{
-  line-height:1.5;
-  color:#ddd5e8;
-}
-
-.btn{
-  border:0;
-  border-radius:12px;
-  padding:12px 18px;
-  background:#ffd43b;
-  color:#201807;
-  font-weight:900;
-  cursor:pointer;
-}
-
-.controls{
-  display:flex;
-  justify-content:center;
-  gap:10px;
-  flex-wrap:wrap;
-}
-
-.ctrl{
-  min-width:64px;
-  height:48px;
-  border:1px solid #514264;
-  background:#241d32;
-  color:#fff;
-  border-radius:12px;
-  font-size:18px;
-  font-weight:900;
-  touch-action:none;
-}
-
-.hint{
-  text-align:center;
-  font-size:12px;
-  color:#bdb3c9;
-}
-
-.toast{
-  position:absolute;
+#hint{
+  position:fixed;
+  bottom:10px;
   left:50%;
-  top:16px;
   transform:translateX(-50%);
-  background:#17131fdd;
-  border:1px solid #5c4a70;
-  border-radius:999px;
-  padding:8px 14px;
-  font-weight:800;
-  z-index:4;
-  opacity:0;
-  pointer-events:none;
-  transition:.25s;
-}
-
-.toast.show{
-  opacity:1;
-}
-
-@media(max-width:700px){
-  .wrap{
-    padding:6px;
-  }
-
-  .pill{
-    font-size:11px;
-    padding:6px 9px;
-  }
-
-  .gamebox{
-    border-radius:12px;
-  }
-
-  .hint{
-    font-size:10px;
-  }
-
-  .ctrl{
-    height:44px;
-    min-width:58px;
-  }
+  font-size:12px;
+  opacity:.65;
+  pointer-events:none
 }
 </style>
 </head>
 
 <body>
 
-<div class="wrap">
-
-  <div class="top">
-
-    <div class="title">
-      🐒 MISSION 800$ —
-      <span id="levelName">NIVEAU 1</span>
-    </div>
-
-    <div class="hud">
-
-      <div class="pill">
-        💰 <span id="money">0</span> /
-        <span id="target">400</span>$
-      </div>
-
-      <div class="pill">
-        📄 CV : <span id="cvCount">0</span>/6
-      </div>
-
-      <div class="pill">
-        ❤️ <span id="lives">3</span>
-      </div>
-
-    </div>
-
-  </div>
-
-  <div class="bar">
-    <div class="fill" id="progress"></div>
-  </div>
-
-  <div class="gamebox" id="gamebox">
-
-    <canvas id="game"></canvas>
-
-    <div class="toast" id="toast"></div>
-
-    <div class="overlay" id="overlay">
-
-      <div class="card">
-
-        <h1 id="overlayTitle"></h1>
-
-        <p id="overlayText"></p>
-
-        <button class="btn" id="overlayBtn">
-          CONTINUER
-        </button>
-
-      </div>
-
-    </div>
-
-  </div>
-
-  <div class="controls">
-
-    <button class="ctrl" data-key="ArrowLeft">
-      ◀
-    </button>
-
-    <button class="ctrl" data-key="ArrowRight">
-      ▶
-    </button>
-
-    <button class="ctrl" data-key="Space">
-      ⤒
-    </button>
-
-    <button class="ctrl" data-key="KeyE">
-      E
-    </button>
-
-  </div>
-
-  <div class="hint">
-    ← → / A D : marcher · ESPACE / W / ↑ : sauter · E : action
-  </div>
-
+<div id="wrap">
+  <canvas id="game" width="1280" height="720"></canvas>
 </div>
 
+<div id="hint">
+←/→ ou A/D : courir · E : interaction · ESPACE/W : sauter · R : recommencer
+</div>
 
 <script>
-
 'use strict';
 
+const C=document.getElementById('game');
+const ctx=C.getContext('2d');
 
-const canvas = document.getElementById('game');
-const ctx = canvas.getContext('2d');
+const W=C.width;
+const H=C.height;
+const G=640;
 
-const $ = id => document.getElementById(id);
+const keys=new Set();
 
-let W = 1000;
-let H = 560;
-let dpr = 1;
-let last = 0;
+addEventListener('keydown',e=>{
+  keys.add(e.key.toLowerCase());
 
-let level = 1;
+  if([' ','arrowleft','arrowright','arrowup'].includes(e.key.toLowerCase())){
+    e.preventDefault();
+  }
 
-const keys = new Set();
+  if(e.key.toLowerCase()==='r'){
+    reset();
+  }
+});
+
+addEventListener('keyup',e=>{
+  keys.delete(e.key.toLowerCase());
+});
+
+const clamp=(v,a,b)=>Math.max(a,Math.min(b,v));
+const lerp=(a,b,t)=>a+(b-a)*t;
+
+function rr(x,y,w,h,r){
+  ctx.beginPath();
+  ctx.roundRect(x,y,w,h,r);
+  ctx.fill();
+}
+
+function line(x1,y1,x2,y2,w,color){
+  ctx.strokeStyle=color;
+  ctx.lineWidth=w;
+  ctx.lineCap='round';
+  ctx.beginPath();
+  ctx.moveTo(x1,y1);
+  ctx.lineTo(x2,y2);
+  ctx.stroke();
+}
+
+function circle(x,y,r,color){
+  ctx.fillStyle=color;
+  ctx.beginPath();
+  ctx.arc(x,y,r,0,Math.PI*2);
+  ctx.fill();
+}
+
+function text(s,x,y,size,color='#fff',align='left',weight='700'){
+  ctx.font=`${weight} ${size}px Arial`;
+  ctx.fillStyle=color;
+  ctx.textAlign=align;
+  ctx.textBaseline='middle';
+  ctx.fillText(s,x,y);
+}
 
 
-const state = {
+/* =========================
+   NIVEAU
+========================= */
 
-  money:0,
+const platforms=[
+  {x:0,y:640,w:1280,h:80},
 
-  target:400,
+  {x:150,y:525,w:190,h:18,label:'RECRUTEMENT'},
 
-  cv:0,
+  {x:405,y:450,w:180,h:18,label:'CAFÉ • MODE • RESTO'},
 
-  lives:3,
+  {x:655,y:510,w:205,h:18,label:'CONSTRUCTION'},
 
-  phase:'play',
+  {x:930,y:420,w:190,h:18,label:'BUREAUX'},
 
-  collected:new Set(),
-
-  eventCooldown:0
-
-};
+  {x:1045,y:565,w:120,h:18,label:'RH'}
+];
 
 
-const player = {
+/* =========================
+   CV
+========================= */
 
-  x:80,
+const cvSpots=[
+  {x:205,y:488},
+  {x:310,y:592},
+  {x:445,y:413},
+  {x:555,y:592},
+  {x:700,y:473},
+  {x:815,y:592},
+  {x:955,y:383},
+  {x:1100,y:528}
+].map((p,i)=>({
+  id:i,
+  ...p,
+  taken:false,
+  bob:i*.7
+}));
 
-  y:0,
 
-  w:38,
+/* =========================
+   PERSONNAGES
+========================= */
 
-  h:70,
-
+const player={
+  x:55,
+  y:548,
+  w:54,
+  h:92,
   vx:0,
-
   vy:0,
-
   onGround:false,
+  face:1,
+  anim:0
+};
 
-  dir:1,
+const princess={
+  x:1135,
+  y:536,
+  w:54,
+  h:104,
+  face:-1,
+  anim:0
+};
 
-  anim:0,
+const kangarooF={
+  x:335,
+  y:545,
+  w:60,
+  h:95,
+  vx:-.7,
+  face:-1,
+  anim:0
+};
 
-  inv:0,
-
-  jumpLock:false
-
+const kangarooM={
+  x:870,
+  y:545,
+  w:70,
+  h:95,
+  vx:.65,
+  face:1,
+  anim:0
 };
 
 
-let platforms = [];
-let items = [];
-let hazards = [];
-let npcs = [];
-let particles = [];
-let clouds = [];
-let cityBuildings = [];
-
-let cameraX = 0;
-let worldW = 3600;
-
-
-function resize(){
-
-  const r = canvas.getBoundingClientRect();
-
-  dpr = Math.min(devicePixelRatio || 1,2);
-
-  W = Math.max(640,r.width);
-  H = Math.max(360,r.height);
-
-  canvas.width = Math.round(W*dpr);
-  canvas.height = Math.round(H*dpr);
-
-  ctx.setTransform(dpr,0,0,dpr,0,0);
-}
-
-
-new ResizeObserver(resize).observe(canvas);
-
-resize();
-
-
-function resetLevel(n){
-
-  level = n;
-
-  state.phase = 'play';
-
-  state.collected.clear();
-
-  state.eventCooldown = 0;
-
-  particles = [];
-
-  items = [];
-
-  hazards = [];
-
-  npcs = [];
-
-  platforms = [];
-
-  cameraX = 0;
-
-  player.x = 90;
-  player.y = 350;
-
-  player.vx = 0;
-  player.vy = 0;
-
-  player.inv = 0;
-
-  player.dir = 1;
-
-  player.jumpLock = false;
-
-
-  if(n === 1){
-
-    setupLevel1();
-
-  }else if(n === 2){
-
-    setupLevel2();
-
-  }else{
-
-    setupLevel3();
-
-  }
-
-
-  updateHUD();
-
-}
-
-
-function addPlatform(x,y,w,h=24,type='ground'){
-
-  platforms.push({
-    x,
-    y,
-    w,
-    h,
-    type
-  });
-
-}
-
-
-function addItem(x,y,type,id){
-
-  items.push({
-
-    x,
-    y,
-
-    w:type === 'cv' ? 30 : 24,
-
-    h:type === 'cv' ? 18 : 24,
-
-    type,
-
-    id,
-
-    got:false,
-
-    bob:Math.random()*6
-
-  });
-
-}
-
-
-/* =========================================================
-   NIVEAU 1 — VILLE / RECHERCHE D'EMPLOI
-   ========================================================= */
-
-function setupLevel1(){
-
-  worldW = 4200;
-
-  state.target = 400;
-  state.money = 0;
-  state.cv = 0;
-  state.lives = 3;
-
-  player.w = 38;
-  player.h = 70;
-
-
-  addPlatform(
-    0,
-    470,
-    4200,
-    90,
-    'street'
-  );
-
-
-  const roofs = [
-
-    [360,390,230],
-    [720,335,220],
-    [1080,420,260],
-    [1450,350,250],
-    [1840,400,300],
-    [2260,325,240],
-    [2660,390,300],
-    [3080,335,260],
-    [3460,410,300]
-
-  ];
-
-
-  roofs.forEach((r,i)=>{
-
-    addPlatform(
-      r[0],
-      r[1],
-      r[2],
-      28,
-      'roof'
-    );
-
-
-    if(i % 2 === 0){
-
-      addPlatform(
-        r[0]+40,
-        r[1]-70,
-        110,
-        18,
-        'roof'
-      );
-
-    }
-
-  });
-
-
-  const cvs = [
-
-    [250,420],
-    [470,340],
-    [790,285],
-    [1160,370],
-    [1525,300],
-    [1880,350],
-    [2320,275],
-    [2730,340],
-    [3150,285],
-    [3530,360],
-    [3820,420]
-
-  ];
-
-
-  cvs.forEach((p,i)=>{
-
-    addItem(
-      p[0],
-      p[1],
-      'cv',
-      i
-    );
-
-  });
-
-
-  hazards = [
-
-    {
-      x:600,
-      y:432,
-      w:55,
-      h:38,
-      type:'cone'
-    },
-
-    {
-      x:990,
-      y:430,
-      w:90,
-      h:40,
-      type:'car'
-    },
-
-    {
-      x:1320,
-      y:438,
-      w:70,
-      h:32,
-      type:'cone'
-    },
-
-    {
-      x:1720,
-      y:425,
-      w:75,
-      h:45,
-      type:'car'
-    },
-
-    {
-      x:2110,
-      y:438,
-      w:60,
-      h:32,
-      type:'cone'
-    },
-
-    {
-      x:2510,
-      y:430,
-      w:90,
-      h:40,
-      type:'car'
-    },
-
-    {
-      x:2980,
-      y:438,
-      w:60,
-      h:32,
-      type:'cone'
-    },
-
-    {
-      x:3370,
-      y:425,
-      w:80,
-      h:45,
-      type:'car'
-    },
-
-    {
-      x:3760,
-      y:438,
-      w:60,
-      h:32,
-      type:'cone'
-    }
-
-  ];
-
-
-  for(let i=0;i<6;i++){
-
-    npcs.push({
-
-      x:300+i*630,
-
-      y:420,
-
-      w:28,
-
-      h:50,
-
-      type:'person',
-
-      walk:Math.random()*6
-
-    });
-
-  }
-
-
-  cityBuildings = [];
-
-
-  for(
-    let x=0;
-    x<worldW;
-    x+=150
-  ){
-
-    cityBuildings.push({
-
-      x,
-
-      w:110+Math.random()*70,
-
-      h:120+Math.random()*190,
-
-      seed:Math.random()
-
-    });
-
-  }
-
-
-  clouds = Array.from(
-    {length:12},
-    (_,i)=>({
-
-      x:i*360+80,
-
-      y:60+(i%3)*55,
-
-      s:.7+(i%4)*.12
-
-    })
-  );
-
-}
-
-
-/* =========================================================
-   NIVEAU 2 — CHANTIER
-   ========================================================= */
-
-function setupLevel2(){
-
-  worldW = 4200;
-
-  state.target = 800;
-
-  state.money = 400;
-
-  state.cv = 0;
-
-  state.lives = 3;
-
-  player.w = 42;
-
-  player.h = 76;
-
-
-  addPlatform(
-    0,
-    470,
-    4200,
-    90,
-    'ground'
-  );
-
-
-  [
-
-    [250,380,260],
-    [690,320,260],
-    [1100,410,240],
-    [1470,350,280],
-    [1900,300,250],
-    [2260,395,300],
-    [2710,325,250],
-    [3090,380,300],
-    [3520,300,260]
-
-  ].forEach(r=>{
-
-    addPlatform(
-      r[0],
-      r[1],
-      r[2],
-      28,
-      'scaffold'
-    );
-
-  });
-
-
-  const bills = [
-
-    [220,330],
-    [350,285],
-    [740,265],
-    [1120,360],
-    [1510,295],
-    [1940,245],
-    [2320,345],
-    [2750,270],
-    [3140,330],
-    [3570,245],
-    [3890,410]
-
-  ];
-
-
-  bills.forEach((p,i)=>{
-
-    addItem(
-      p[0],
-      p[1],
-      'money',
-      i
-    );
-
-  });
-
-
-  hazards = [
-
-    {
-      x:520,
-      y:420,
-      w:65,
-      h:50,
-      type:'barrel'
-    },
-
-    {
-      x:980,
-      y:415,
-      w:65,
-      h:55,
-      type:'barrel'
-    },
-
-    {
-      x:1360,
-      y:420,
-      w:90,
-      h:50,
-      type:'machine'
-    },
-
-    {
-      x:1740,
-      y:410,
-      w:75,
-      h:60,
-      type:'barrel'
-    },
-
-    {
-      x:2150,
-      y:420,
-      w:80,
-      h:50,
-      type:'machine'
-    },
-
-    {
-      x:2560,
-      y:415,
-      w:65,
-      h:55,
-      type:'barrel'
-    },
-
-    {
-      x:2960,
-      y:420,
-      w:90,
-      h:50,
-      type:'machine'
-    },
-
-    {
-      x:3370,
-      y:410,
-      w:75,
-      h:60,
-      type:'barrel'
-    },
-
-    {
-      x:3770,
-      y:420,
-      w:80,
-      h:50,
-      type:'machine'
-    }
-
-  ];
-
-
-  for(let i=0;i<9;i++){
-
-    npcs.push({
-
-      x:180+i*430,
-
-      y:390,
-
-      w:30,
-
-      h:80,
-
-      type:'worker',
-
-      walk:Math.random()*6
-
-    });
-
-  }
-
-
-  clouds = Array.from(
-    {length:10},
-    (_,i)=>({
-
-      x:i*430+100,
-
-      y:55+(i%2)*80,
-
-      s:.8
-
-    })
-  );
-
-}
-
-
-/* =========================================================
-   NIVEAU 3 — LA PRINCESSE
-   ========================================================= */
-
-function setupLevel3(){
-
-  worldW = 1900;
-
-  state.target = 800;
-
-  state.money = 800;
-
-  state.cv = 0;
-
-  state.lives = 3;
-
-  player.w = 42;
-
-  player.h = 76;
-
-
-  addPlatform(
-    0,
-    470,
-    1900,
-    90,
-    'ground'
-  );
-
-
-  addPlatform(
-    320,
-    365,
-    260,
-    26,
-    'park'
-  );
-
-
-  addPlatform(
-    820,
-    390,
-    260,
-    26,
-    'park'
-  );
-
-
-  addPlatform(
-    1250,
-    340,
-    300,
-    26,
-    'park'
-  );
-
-
-  npcs.push({
-
-    x:980,
-
-    y:394,
-
+/* =========================
+   OBSTACLES / ENNEMIS
+========================= */
+
+const enemies=[
+  {
+    x:570,
+    y:585,
     w:42,
+    h:55,
+    vx:-1.1
+  },
+  {
+    x:1020,
+    y:585,
+    w:42,
+    h:55,
+    vx:1.2
+  }
+];
 
-    h:76,
 
-    type:'princess',
+/* =========================
+   ETAT DU JEU
+========================= */
 
-    dir:-1,
+let money=0;
+let missionDone=false;
+let scene='game';
 
-    anim:0
+let finishTimer=0;
+let flash=0;
+let photoT=0;
+let tearT=0;
 
+let toast='Récupère les 8 CV. Chaque CV vaut 100 $.';
+let toastT=4;
+
+
+/* =========================
+   RESET
+========================= */
+
+function reset(){
+
+  money=0;
+  missionDone=false;
+  scene='game';
+
+  finishTimer=0;
+  photoT=0;
+  tearT=0;
+  flash=0;
+
+  player.x=55;
+  player.y=548;
+  player.vx=0;
+  player.vy=0;
+
+  cvSpots.forEach(c=>{
+    c.taken=false;
   });
 
-
-  npcs.push({
-
-    x:1420,
-
-    y:394,
-
-    w:44,
-
-    h:76,
-
-    type:'kangarooF',
-
-    dir:-1,
-
-    anim:0
-
-  });
-
-
-  npcs.push({
-
-    x:1660,
-
-    y:394,
-
-    w:48,
-
-    h:80,
-
-    type:'kangarooM',
-
-    dir:-1,
-
-    anim:0
-
-  });
-
+  toast='Récupère les 8 CV. Chaque CV vaut 100 $.';
+  toastT=4;
 }
 
 
-/* =========================================================
+function say(s){
+  toast=s;
+  toastT=2.8;
+}
+
+
+/* =========================
    COLLISIONS
-   ========================================================= */
+========================= */
 
-function rectsOverlap(a,b){
+function collideWorld(){
 
-  return (
-
-    a.x < b.x+b.w &&
-
-    a.x+a.w > b.x &&
-
-    a.y < b.y+b.h &&
-
-    a.y+a.h > b.y
-
-  );
-
-}
-
-
-function solidCollision(ent){
-
-  ent.onGround = false;
-
+  player.onGround=false;
 
   for(const p of platforms){
 
     if(
-
-      ent.x+ent.w > p.x &&
-
-      ent.x < p.x+p.w &&
-
-      ent.y+ent.h >= p.y &&
-
-      ent.y+ent.h <= p.y+p.h+18 &&
-
-      ent.vy >= 0
-
+      player.x+player.w>p.x &&
+      player.x<p.x+p.w
     ){
 
-      ent.y = p.y-ent.h;
+      const bottom=player.y+player.h;
 
-      ent.vy = 0;
+      if(
+        player.vy>=0 &&
+        bottom<=p.y+22 &&
+        bottom+player.vy>=p.y
+      ){
 
-      ent.onGround = true;
-
+        player.y=p.y-player.h;
+        player.vy=0;
+        player.onGround=true;
+      }
     }
-
   }
 
+  if(player.y+player.h>G){
 
-  if(ent.y+ent.h >= 470){
-
-    ent.y = 470-ent.h;
-
-    ent.vy = 0;
-
-    ent.onGround = true;
-
+    player.y=G-player.h;
+    player.vy=0;
+    player.onGround=true;
   }
-
 }
 
 
-/* =========================================================
-   JOUEUR
-   ========================================================= */
+/* =========================
+   UPDATE
+========================= */
 
-function movePlayer(dt){
+function update(dt){
 
-  if(state.phase !== 'play') return;
+  /* SCENE PHOTO */
 
-
-  const left =
-    keys.has('ArrowLeft') ||
-    keys.has('KeyA');
-
-
-  const right =
-    keys.has('ArrowRight') ||
-    keys.has('KeyD');
-
-
-  const jump =
-    keys.has('Space') ||
-    keys.has('ArrowUp') ||
-    keys.has('KeyW');
-
-
-  const accel = 2100;
-
-  const max = 330;
-
-  const fric = 1800;
-
-
-  if(left){
-
-    player.vx -= accel*dt;
-
-    player.dir = -1;
-
+  if(scene==='photo'){
+    photoT+=dt;
+    tearT=Math.max(0,photoT-1.8);
+    return;
   }
 
 
-  if(right){
+  /* SCENE FIN */
 
-    player.vx += accel*dt;
+  if(scene==='complete'){
 
-    player.dir = 1;
+    finishTimer+=dt;
 
-  }
-
-
-  if(!left && !right){
-
-    if(Math.abs(player.vx)<fric*dt){
-
-      player.vx=0;
-
-    }else{
-
-      player.vx -=
-        Math.sign(player.vx)*fric*dt;
-
+    if(finishTimer>2.5){
+      scene='photo';
     }
 
+    return;
   }
 
 
-  player.vx =
-    Math.max(
-      -max,
-      Math.min(max,player.vx)
+  /* =========================
+     CONTROLES
+  ========================= */
+
+  const left=
+    keys.has('arrowleft') ||
+    keys.has('a');
+
+  const right=
+    keys.has('arrowright') ||
+    keys.has('d');
+
+  const jump=
+    keys.has(' ') ||
+    keys.has('w') ||
+    keys.has('arrowup');
+
+
+  const accel=
+    left ? -1 :
+    right ? 1 :
+    0;
+
+
+  player.vx=
+    lerp(
+      player.vx,
+      accel*5.8,
+      Math.min(1,dt*12)
     );
+
+
+  if(accel){
+    player.face=accel;
+  }
+
+
+  /* SAUT */
+
+  if(jump && player.onGround){
+
+    player.vy=-13.2;
+    player.onGround=false;
+
+    keys.delete(' ');
+    keys.delete('w');
+    keys.delete('arrowup');
+  }
+
+
+  /* GRAVITE */
+
+  player.vy+=30*dt;
+
+  player.x+=player.vx;
+  player.y+=player.vy*dt;
+
+  player.x=
+    clamp(
+      player.x,
+      0,
+      W-player.w
+    );
+
+  collideWorld();
+
+
+  player.anim+=
+    dt*(Math.abs(player.vx)*.65+1);
+
+
+  /* =========================
+     KANGOUROUS
+  ========================= */
+
+  kangarooF.x+=kangarooF.vx;
+  kangarooM.x+=kangarooM.vx;
 
 
   if(
-    jump &&
-    player.onGround &&
-    !player.jumpLock
+    kangarooF.x<300 ||
+    kangarooF.x>365
   ){
-
-    player.vy = -690;
-
-    player.onGround = false;
-
-    player.jumpLock = true;
-
-    burst(
-      player.x+player.w/2,
-      player.y+player.h,
-      8,
-      'dust'
-    );
-
+    kangarooF.vx*=-1;
   }
 
-
-  if(!jump){
-
-    player.jumpLock=false;
-
-  }
-
-
-  player.vy += 1800*dt;
-
-  player.x += player.vx*dt;
-
-  player.y += player.vy*dt;
-
-
-  player.x =
-    Math.max(
-      0,
-      Math.min(
-        worldW-player.w,
-        player.x
-      )
-    );
-
-
-  solidCollision(player);
-
-
-  player.anim +=
-    dt*Math.min(
-      12,
-      Math.abs(player.vx)/35
-    );
-
-
-  if(player.inv>0){
-
-    player.inv-=dt;
-
-  }
-
-}
-
-
-/* =========================================================
-   OBJETS
-   ========================================================= */
-
-function updateItems(dt){
-
-  for(const it of items){
-
-    it.bob += dt*4;
-
-    if(it.got) continue;
-
-
-    const b = {
-
-      x:it.x-3,
-
-      y:it.y+Math.sin(it.bob)*5,
-
-      w:it.w+6,
-
-      h:it.h+8
-
-    };
-
-
-    if(rectsOverlap(player,b)){
-
-      it.got=true;
-
-      state.collected.add(it.id);
-
-
-      if(it.type==='cv'){
-
-        state.cv++;
-
-      }else{
-
-        state.money += 40;
-
-      }
-
-
-      burst(
-
-        it.x+it.w/2,
-
-        it.y+it.h/2,
-
-        14,
-
-        it.type==='cv'
-          ? '#fff'
-          : '#ffd43b'
-
-      );
-
-
-      toast(
-        it.type==='cv'
-          ? 'CV récupéré !'
-          : 'Billet récupéré !'
-      );
-
-
-      updateHUD();
-
-    }
-
-  }
-
-}
-
-
-/* =========================================================
-   OBSTACLES
-   ========================================================= */
-
-function updateHazards(dt){
-
-  for(const h of hazards){
-
-    if(
-      h.type==='car' ||
-      h.type==='machine'
-    ){
-
-      h.x +=
-        Math.sin(
-          performance.now()/600+h.y
-        )*.2;
-
-    }
-
-
-    if(
-      rectsOverlap(player,h) &&
-      player.inv<=0
-    ){
-
-      player.inv=1.2;
-
-      state.lives--;
-
-      player.vx =
-        -player.dir*240;
-
-      player.vy=-360;
-
-
-      burst(
-        player.x+player.w/2,
-        player.y+player.h/2,
-        18,
-        '#ff5f6d'
-      );
-
-
-      toast(
-        'Aïe ! Fais attention !'
-      );
-
-
-      if(state.lives<=0){
-
-        gameOver();
-
-      }
-
-
-      updateHUD();
-
-    }
-
-  }
-
-}
-
-
-/* =========================================================
-   PERSONNAGES SECONDAIRES
-   ========================================================= */
-
-function updateNPCs(dt){
-
-  for(const n of npcs){
-
-    n.anim =
-      (n.anim||0)+dt*6;
-
-
-    if(
-      n.type==='person' ||
-      n.type==='worker'
-    ){
-
-      n.x +=
-        Math.sin(
-          performance.now()/1000+n.walk
-        )*12*dt;
-
-
-      n.x =
-        Math.max(
-          30,
-          Math.min(
-            worldW-n.w-30,
-            n.x
-          )
-        );
-
-    }
-
-  }
-
-}
-
-
-/* =========================================================
-   HUD
-   ========================================================= */
-
-function updateHUD(){
-
-  const progress =
-    level===1
-      ? state.cv/6
-      : level===2
-        ? (state.money-400)/400
-        : 1;
-
-
-  $('levelName').textContent =
-    level===1
-      ? 'NIVEAU 1 — RECHERCHE D’EMPLOI'
-      : level===2
-        ? 'NIVEAU 2 — LE CHANTIER'
-        : 'NIVEAU 3 — LES 800$';
-
-
-  $('money').textContent =
-    state.money;
-
-
-  $('target').textContent =
-    level===1 ? 400 : 800;
-
-
-  $('cvCount').textContent =
-    state.cv;
-
-
-  $('lives').textContent =
-    state.lives;
-
-
-  $('progress').style.width =
-    Math.max(
-      0,
-      Math.min(
-        100,
-        progress*100
-      )
-    )+'%';
-
-}
-
-
-/* =========================================================
-   PROGRESSION
-   ========================================================= */
-
-function checkProgress(){
 
   if(
-    level===1 &&
-    state.cv>=6 &&
-    state.phase==='play'
+    kangarooM.x<825 ||
+    kangarooM.x>900
   ){
-
-    state.phase='transition';
-
-
-    showOverlay(
-
-      'NIVEAU 1 TERMINÉ 🎉',
-
-      'Tous les CV sont récupérés. Une entreprise rappelle le gorille : direction le chantier !',
-
-      'NIVEAU 2',
-
-      ()=>{
-
-        resetLevel(2);
-
-        hideOverlay();
-
-      }
-
-    );
-
+    kangarooM.vx*=-1;
   }
 
 
-  else if(
-    level===2 &&
-    state.money>=800 &&
-    state.phase==='play'
-  ){
-
-    state.phase='transition';
+  kangarooF.anim+=dt*4;
+  kangarooM.anim+=dt*4;
+  princess.anim+=dt*2;
 
 
-    showOverlay(
+  /* =========================
+     ENNEMIS
+  ========================= */
 
-      '800$ RÉUNIS 💰',
+  for(const e of enemies){
 
-      'Après avoir bossé comme un malade sur le chantier, il a enfin l’argent. Maintenant, il doit le rendre.',
+    e.x+=e.vx;
 
-      'NIVEAU 3',
-
-      ()=>{
-
-        resetLevel(3);
-
-        hideOverlay();
-
-      }
-
-    );
-
-  }
-
-}
-
-
-function gameOver(){
-
-  state.phase='over';
-
-
-  showOverlay(
-
-    'OUILLE. 😵',
-
-    'Le gorille a pris trop de coups. Même un gorille a ses limites.',
-
-    'RECOMMENCER',
-
-    ()=>{
-
-      resetLevel(level);
-
-      hideOverlay();
-
+    if(
+      e.x<520 ||
+      e.x>610
+    ){
+      e.vx*=-1;
     }
-
-  );
-
-}
-
-
-function showOverlay(t,p,b,fn){
-
-  $('overlayTitle').textContent=t;
-
-  $('overlayText').textContent=p;
-
-  $('overlayBtn').textContent=b;
-
-  $('overlay').style.display='flex';
-
-  $('overlayBtn').onclick=fn;
-
-}
-
-
-function hideOverlay(){
-
-  $('overlay').style.display='none';
-
-}
-
-
-/* =========================================================
-   MESSAGES
-   ========================================================= */
-
-function toast(s){
-
-  const e=$('toast');
-
-  e.textContent=s;
-
-  e.classList.remove('show');
-
-  void e.offsetWidth;
-
-  e.classList.add('show');
-
-  clearTimeout(toast.t);
-
-  toast.t=setTimeout(
-    ()=>e.classList.remove('show'),
-    1200
-  );
-
-}
-
-
-/* =========================================================
-   PARTICULES
-   ========================================================= */
-
-function burst(x,y,n,color){
-
-  for(let i=0;i<n;i++){
-
-    particles.push({
-
-      x,
-
-      y,
-
-      vx:(Math.random()-.5)*260,
-
-      vy:(Math.random()-.8)*300,
-
-      life:.5+Math.random()*.5,
-
-      max:.8,
-
-      color,
-
-      size:3+Math.random()*5
-
-    });
-
-  }
-
-}
-
-
-function updateParticles(dt){
-
-  for(const p of particles){
-
-    p.life-=dt;
-
-    p.vy+=600*dt;
-
-    p.x+=p.vx*dt;
-
-    p.y+=p.vy*dt;
-
   }
 
 
-  particles =
-    particles.filter(
-      p=>p.life>0
-    );
+  /* =========================
+     RECUPERATION DES CV
+  ========================= */
 
+  for(const c of cvSpots){
+
+    if(
+      !c.taken &&
+      player.x+player.w>c.x-18 &&
+      player.x<c.x+18 &&
+      player.y+player.h>c.y-35 &&
+      player.y<c.y+20
+    ){
+
+      c.taken=true;
+
+      money+=100;
+
+      flash=.12;
+
+      say(
+        `CV récupéré : +100 $  •  ${money} / 800 $`
+      );
+    }
+  }
+
+
+  /* =========================
+     DON DES 800 $
+  ========================= */
+
+  if(
+    money===800 &&
+    !missionDone
+  ){
+
+    const nearPrincess=
+      Math.abs(
+        (player.x+player.w/2) -
+        (princess.x+princess.w/2)
+      )<72
+      &&
+      Math.abs(
+        (player.y+player.h) -
+        (princess.y+princess.h)
+      )<70;
+
+
+    if(
+      nearPrincess &&
+      keys.has('e')
+    ){
+
+      keys.delete('e');
+
+      money=0;
+
+      missionDone=true;
+
+      scene='complete';
+
+      finishTimer=0;
+
+      say(
+        'Mission validée ! Les 800 $ sont remis à la princesse.'
+      );
+    }
+  }
+
+
+  if(toastT>0){
+    toastT-=dt;
+  }
+
+  if(flash>0){
+    flash-=dt;
+  }
 }
 
 
-/* =========================================================
-   DÉCOR
-   ========================================================= */
+/* =========================
+   CIEL
+========================= */
 
 function drawSky(){
 
-  const g =
+  const g=
     ctx.createLinearGradient(
       0,0,0,H
     );
 
+  g.addColorStop(
+    0,
+    '#74d8ff'
+  );
 
-  if(level===1){
+  g.addColorStop(
+    .65,
+    '#d9f3ff'
+  );
 
-    g.addColorStop(
-      0,
-      '#63c9ff'
+  g.addColorStop(
+    1,
+    '#f6d6bd'
+  );
+
+  ctx.fillStyle=g;
+
+  ctx.fillRect(
+    0,0,W,H
+  );
+
+
+  circle(
+    1110,
+    92,
+    48,
+    '#ffd34e'
+  );
+
+  circle(
+    1110,
+    92,
+    58,
+    'rgba(255,211,78,.12)'
+  );
+
+
+  for(
+    const [x,y,s]
+    of [
+      [170,105,1],
+      [470,145,.8],
+      [810,95,1.2],
+      [1010,180,.75]
+    ]
+  ){
+
+    circle(
+      x,
+      y,
+      20*s,
+      '#fff'
     );
 
-    g.addColorStop(
-      1,
-      '#e6f7ff'
+    circle(
+      x+25*s,
+      y-4*s,
+      27*s,
+      '#fff'
     );
 
+    circle(
+      x+52*s,
+      y+4*s,
+      18*s,
+      '#fff'
+    );
+  }
+}
+
+
+/* =========================
+   IMMEUBLES
+========================= */
+
+function building(
+  x,
+  y,
+  w,
+  h,
+  seed,
+  label
+){
+
+  ctx.fillStyle=
+    seed%2
+      ? '#34456b'
+      : '#40527b';
+
+  ctx.fillRect(
+    x,
+    y,
+    w,
+    h
+  );
+
+
+  ctx.fillStyle='#263552';
+
+  ctx.fillRect(
+    x,
+    y,
+    w,
+    9
+  );
+
+
+  for(
+    let yy=y+30;
+    yy<y+h-12;
+    yy+=32
+  ){
+
+    for(
+      let xx=x+18;
+      xx<x+w-15;
+      xx+=34
+    ){
+
+      ctx.fillStyle=
+        ((xx+yy+seed)%3===0)
+          ? '#ffd96a'
+          : '#dcecf0';
+
+      ctx.fillRect(
+        xx,
+        yy,
+        16,
+        19
+      );
+    }
   }
 
-  else if(level===2){
 
-    g.addColorStop(
-      0,
-      '#ffc77b'
+  text(
+    label,
+    x+w/2,
+    y+18,
+    12,
+    '#fff',
+    'center',
+    '900'
+  );
+}
+
+
+/* =========================
+   VILLE
+========================= */
+
+function drawCity(){
+
+  building(
+    0,
+    270,
+    170,
+    370,
+    1,
+    'AGENCE'
+  );
+
+  building(
+    180,
+    235,
+    210,
+    405,
+    2,
+    'CAFÉ • MODE • RESTO'
+  );
+
+  building(
+    410,
+    180,
+    190,
+    460,
+    3,
+    'START-UP'
+  );
+
+  building(
+    610,
+    225,
+    220,
+    415,
+    4,
+    'CONSTRUCTION'
+  );
+
+  building(
+    840,
+    145,
+    180,
+    495,
+    5,
+    'BUREAUX'
+  );
+
+  building(
+    1030,
+    250,
+    250,
+    390,
+    6,
+    'RH'
+  );
+
+
+  /* ECHAFAUDAGES */
+
+  ctx.strokeStyle='#ef9b38';
+  ctx.lineWidth=7;
+
+  for(
+    let x=650;
+    x<=855;
+    x+=55
+  ){
+
+    line(
+      x,
+      510,
+      x,
+      350,
+      7,
+      '#e7a13b'
     );
-
-    g.addColorStop(
-      1,
-      '#ffe7bf'
-    );
-
   }
+
+
+  for(
+    let y=360;
+    y<=510;
+    y+=50
+  ){
+
+    line(
+      645,
+      y,
+      865,
+      y,
+      7,
+      '#e7a13b'
+    );
+  }
+
+
+  /* ROUTE */
+
+  ctx.fillStyle='#263347';
+
+  ctx.fillRect(
+    0,
+    640,
+    W,
+    80
+  );
+
+
+  ctx.fillStyle='#f4dc80';
+
+  for(
+    let x=20;
+    x<W;
+    x+=130
+  ){
+
+    ctx.fillRect(
+      x,
+      676,
+      65,
+      7
+    );
+  }
+
+
+  /* VOITURES */
+
+  for(
+    const x
+    of [100,740,1180]
+  ){
+
+    ctx.fillStyle='#df5b57';
+
+    rr(
+      x,
+      613,
+      70,
+      24,
+      7
+    );
+
+    ctx.fillStyle='#bfe6f1';
+
+    ctx.fillRect(
+      x+12,
+      602,
+      24,
+      15
+    );
+
+    ctx.fillRect(
+      x+42,
+      602,
+      16,
+      15
+    );
+
+    circle(
+      x+14,
+      638,
+      8,
+      '#161c28'
+    );
+
+    circle(
+      x+56,
+      638,
+      8,
+      '#161c28'
+    );
+  }
+}
+
+
+/* =========================
+   CV
+========================= */
+
+function drawCV(c){
+
+  if(c.taken)return;
+
+  const bob=
+    Math.sin(
+      performance.now()/260+c.bob
+    )*5;
+
+  const x=c.x;
+  const y=c.y+bob;
+
+
+  ctx.save();
+
+  ctx.translate(
+    x,
+    y
+  );
+
+  ctx.rotate(
+    Math.sin(
+      performance.now()/500+c.bob
+    )*.03
+  );
+
+
+  ctx.shadowColor='#0005';
+  ctx.shadowBlur=8;
+
+  ctx.fillStyle='#fff9ea';
+
+  rr(
+    -24,
+    -17,
+    48,
+    34,
+    5
+  );
+
+
+  ctx.shadowBlur=0;
+
+  ctx.strokeStyle='#d2b47b';
+  ctx.lineWidth=2;
+
+  ctx.strokeRect(
+    -24,
+    -17,
+    48,
+    34
+  );
+
+
+  ctx.fillStyle='#333';
+
+  ctx.fillRect(
+    -15,
+    -9,
+    8,
+    8
+  );
+
+
+  ctx.fillStyle='#555';
+
+  ctx.fillRect(
+    -2,
+    -8,
+    17,
+    3
+  );
+
+  ctx.fillRect(
+    -2,
+    -2,
+    12,
+    3
+  );
+
+
+  ctx.fillStyle='#d69d44';
+
+  ctx.fillRect(
+    -17,
+    4,
+    32,
+    3
+  );
+
+
+  text(
+    'CV',
+    0,
+    13,
+    9,
+    '#4a5568',
+    'center',
+    '900'
+  );
+
+
+  ctx.restore();
+}
+
+
+/* =========================
+   MEMBRES
+========================= */
+
+function limb(
+  x1,
+  y1,
+  x2,
+  y2,
+  w,
+  skin,
+  shadow
+){
+
+  line(
+    x1,
+    y1,
+    x2,
+    y2,
+    w,
+    shadow
+  );
+
+  line(
+    x1,
+    y1,
+    x2,
+    y2,
+    w-5,
+    skin
+  );
+}
+
+
+function joint(
+  x,
+  y,
+  r,
+  skin
+){
+
+  circle(
+    x,
+    y,
+    r,
+    '#261d24'
+  );
+
+  circle(
+    x,
+    y,
+    r-2,
+    skin
+  );
+}
+
+
+/* =========================
+   PERSONNAGES HUMANOÏDES
+========================= */
+
+function drawHumanoid(
+  x,
+  y,
+  opts
+){
+
+  const {
+    type='gorilla',
+    face=1,
+    walk=0,
+    scale=1
+  }=opts;
+
+
+  ctx.save();
+
+  ctx.translate(
+    x,
+    y
+  );
+
+  ctx.scale(
+    scale,
+    scale
+  );
+
+
+  const t=
+    performance.now()/1000;
+
+
+  const moving=
+    Math.abs(walk)>0.1;
+
+
+  const swing=
+    moving
+      ? Math.sin(t*10)*0.55
+      : 0;
+
+
+  const bob=
+    moving
+      ? Math.abs(
+          Math.sin(t*10)
+        )*2
+      : 0;
+
+
+  /* =========================
+     PRINCESSE
+  ========================= */
+
+  if(type==='princess'){
+
+    const skin='#d8a07d';
+    const hair='#3a2030';
+    const dress='#8d55d8';
+    const light='#d99bf3';
+
+
+    /* TETE */
+
+    circle(
+      0,
+      -82+bob,
+      25,
+      skin
+    );
+
+
+    /* CHEVEUX */
+
+    ctx.fillStyle=hair;
+
+    ctx.beginPath();
+
+    ctx.arc(
+      -3,
+      -88+bob,
+      27,
+      Math.PI,
+      Math.PI*2
+    );
+
+    ctx.fill();
+
+
+    ctx.fillStyle=hair;
+
+    ctx.beginPath();
+
+    ctx.moveTo(
+      -25,
+      -88
+    );
+
+    ctx.quadraticCurveTo(
+      -42,
+      -60,
+      -25,
+      -35
+    );
+
+    ctx.quadraticCurveTo(
+      -12,
+      -55,
+      -14,
+      -78
+    );
+
+    ctx.fill();
+
+
+    /* VISAGE */
+
+    circle(
+      -8,
+      -82+bob,
+      2.5,
+      '#201722'
+    );
+
+    circle(
+      8,
+      -82+bob,
+      2.5,
+      '#201722'
+    );
+
+    line(
+      -5,
+      -70+bob,
+      6,
+      -70+bob,
+      2,
+      '#7c3f55'
+    );
+
+
+    /* ROBE */
+
+    ctx.fillStyle=dress;
+
+    ctx.beginPath();
+
+    ctx.moveTo(
+      -15,
+      -57+bob
+    );
+
+    ctx.lineTo(
+      15,
+      -57+bob
+    );
+
+    ctx.lineTo(
+      34,
+      25
+    );
+
+    ctx.lineTo(
+      -34,
+      25
+    );
+
+    ctx.closePath();
+
+    ctx.fill();
+
+
+    ctx.fillStyle=light;
+
+    ctx.beginPath();
+
+    ctx.moveTo(
+      -8,
+      -58
+    );
+
+    ctx.lineTo(
+      8,
+      -58
+    );
+
+    ctx.lineTo(
+      0,
+      -5
+    );
+
+    ctx.closePath();
+
+    ctx.fill();
+
+
+    /* BRAS */
+
+    limb(
+      -13,
+      -48,
+      -32+Math.sin(t*3)*3,
+      -15+bob,
+      13,
+      skin,
+      '#4b2d35'
+    );
+
+    limb(
+      13,
+      -48,
+      30,
+      -17+bob,
+      13,
+      skin,
+      '#4b2d35'
+    );
+
+
+    /* JAMBES */
+
+    limb(
+      -17,
+      22,
+      -18+10*swing,
+      58,
+      14,
+      skin,
+      '#4b2d35'
+    );
+
+    limb(
+      17,
+      22,
+      18-10*swing,
+      58,
+      14,
+      skin,
+      '#4b2d35'
+    );
+
+
+    circle(
+      -18+10*swing,
+      61,
+      7,
+      '#4b2d35'
+    );
+
+    circle(
+      18-10*swing,
+      61,
+      7,
+      '#4b2d35'
+    );
+
+
+    /* COURONNE */
+
+    ctx.fillStyle='#ffd34e';
+
+    ctx.beginPath();
+
+    ctx.moveTo(-15,-110);
+    ctx.lineTo(-9,-94);
+    ctx.lineTo(0,-103);
+    ctx.lineTo(9,-94);
+    ctx.lineTo(16,-110);
+    ctx.lineTo(18,-93);
+    ctx.lineTo(-18,-93);
+
+    ctx.closePath();
+
+    ctx.fill();
+  }
+
+
+  /* =========================
+     GORILLE
+  ========================= */
+
+  else if(type==='gorilla'){
+
+    const skin='#4d4654';
+    const dark='#211c28';
+    const muzzle='#8f7a72';
+
+
+    /* TETE */
+
+    circle(
+      0,
+      -80+bob,
+      27,
+      dark
+    );
+
+    circle(
+      0,
+      -77+bob,
+      24,
+      skin
+    );
+
+
+    /* OREILLES */
+
+    circle(
+      -18,
+      -83+bob,
+      9,
+      dark
+    );
+
+    circle(
+      18,
+      -83+bob,
+      9,
+      dark
+    );
+
+
+    /* YEUX */
+
+    circle(
+      -9,
+      -79+bob,
+      4,
+      '#f1d47b'
+    );
+
+    circle(
+      9,
+      -79+bob,
+      4,
+      '#f1d47b'
+    );
+
+    circle(
+      -9,
+      -79+bob,
+      1.7,
+      '#111'
+    );
+
+    circle(
+      9,
+      -79+bob,
+      1.7,
+      '#111'
+    );
+
+
+    /* MUSEAU */
+
+    ctx.fillStyle=muzzle;
+
+    ctx.beginPath();
+
+    ctx.ellipse(
+      0,
+      -66+bob,
+      15,
+      11,
+      0,
+      0,
+      Math.PI*2
+    );
+
+    ctx.fill();
+
+
+    circle(
+      -5,
+      -68+bob,
+      2,
+      '#222'
+    );
+
+    circle(
+      5,
+      -68+bob,
+      2,
+      '#222'
+    );
+
+
+    line(
+      -6,
+      -60+bob,
+      7,
+      -60+bob,
+      2,
+      '#222'
+    );
+
+
+    /* CORPS */
+
+    ctx.fillStyle=skin;
+
+    ctx.beginPath();
+
+    ctx.moveTo(
+      -27,
+      -52+bob
+    );
+
+    ctx.quadraticCurveTo(
+      -18,
+      -25+bob,
+      -20,
+      15
+    );
+
+    ctx.lineTo(
+      20,
+      15
+    );
+
+    ctx.quadraticCurveTo(
+      18,
+      -25+bob,
+      27,
+      -52+bob
+    );
+
+    ctx.closePath();
+
+    ctx.fill();
+
+
+    /* BRAS LONGS */
+
+    limb(
+      -22,
+      -47,
+      -42+18*swing,
+      10,
+      25,
+      skin,
+      dark
+    );
+
+    limb(
+      22,
+      -47,
+      42-18*swing,
+      10,
+      25,
+      skin,
+      dark
+    );
+
+
+    circle(
+      -42+18*swing,
+      14,
+      13,
+      skin
+    );
+
+    circle(
+      42-18*swing,
+      14,
+      13,
+      skin
+    );
+
+
+    /* JAMBES */
+
+    limb(
+      -12,
+      12,
+      -17-10*swing,
+      58,
+      20,
+      skin,
+      dark
+    );
+
+    limb(
+      12,
+      12,
+      17+10*swing,
+      58,
+      20,
+      skin,
+      dark
+    );
+
+
+    circle(
+      -17-10*swing,
+      61,
+      10,
+      dark
+    );
+
+    circle(
+      17+10*swing,
+      61,
+      10,
+      dark
+    );
+  }
+
+
+  /* =========================
+     KANGOUROUS
+  ========================= */
 
   else{
 
-    g.addColorStop(
+    const skin=
+      type==='kangarooM'
+        ? '#8a644c'
+        : '#b27a54';
+
+    const dark='#4b3027';
+    const belly='#d8a678';
+
+
+    /* TETE */
+
+    circle(
       0,
-      '#8fcbff'
+      -79+bob,
+      23,
+      skin
     );
 
-    g.addColorStop(
-      1,
-      '#ffe5f3'
+
+    /* OREILLES */
+
+    ctx.fillStyle=skin;
+
+    ctx.beginPath();
+
+    ctx.moveTo(
+      -16,
+      -98
     );
 
+    ctx.lineTo(
+      -11,
+      -132
+    );
+
+    ctx.lineTo(
+      -2,
+      -103
+    );
+
+    ctx.lineTo(
+      7,
+      -130
+    );
+
+    ctx.lineTo(
+      15,
+      -96
+    );
+
+    ctx.closePath();
+
+    ctx.fill();
+
+
+    /* YEUX */
+
+    circle(
+      -8,
+      -80+bob,
+      3,
+      '#19131a'
+    );
+
+    circle(
+      8,
+      -80+bob,
+      3,
+      '#19131a'
+    );
+
+
+    line(
+      -6,
+      -68+bob,
+      6,
+      -68+bob,
+      2,
+      dark
+    );
+
+
+    /* CORPS */
+
+    ctx.fillStyle=skin;
+
+    ctx.beginPath();
+
+    ctx.moveTo(
+      -20,
+      -56+bob
+    );
+
+    ctx.quadraticCurveTo(
+      -35,
+      -20+bob,
+      -25,
+      20
+    );
+
+    ctx.quadraticCurveTo(
+      0,
+      34+bob,
+      25,
+      20
+    );
+
+    ctx.quadraticCurveTo(
+      35,
+      -20+bob,
+      20,
+      -56+bob
+    );
+
+    ctx.closePath();
+
+    ctx.fill();
+
+
+    /* VENTRE */
+
+    ctx.fillStyle=belly;
+
+    ctx.beginPath();
+
+    ctx.ellipse(
+      0,
+      -8+bob,
+      16,
+      27,
+      0,
+      0,
+      Math.PI*2
+    );
+
+    ctx.fill();
+
+
+    /* BRAS */
+
+    limb(
+      -18,
+      -48,
+      -32+20*swing,
+      -15+bob,
+      13,
+      skin,
+      dark
+    );
+
+    limb(
+      18,
+      -48,
+      32-20*swing,
+      -15+bob,
+      13,
+      skin,
+      dark
+    );
+
+
+    /* JAMBES */
+
+    limb(
+      -13,
+      17,
+      -20-10*swing,
+      57,
+      16,
+      skin,
+      dark
+    );
+
+    limb(
+      13,
+      17,
+      20+10*swing,
+      57,
+      16,
+      skin,
+      dark
+    );
+
+
+    circle(
+      -23-10*swing,
+      60,
+      9,
+      dark
+    );
+
+    circle(
+      23+10*swing,
+      60,
+      9,
+      dark
+    );
+
+
+    /* QUEUE */
+
+    ctx.strokeStyle=skin;
+    ctx.lineWidth=12;
+    ctx.lineCap='round';
+
+    ctx.beginPath();
+
+    ctx.moveTo(
+      20,
+      15
+    );
+
+    ctx.quadraticCurveTo(
+      55,
+      35,
+      45,
+      65
+    );
+
+    ctx.stroke();
+
+
+    /* VERSION MUSCLE */
+
+    if(type==='kangarooM'){
+
+      ctx.fillStyle='#6c4a38';
+
+      ctx.beginPath();
+
+      ctx.moveTo(
+        -25,
+        -42
+      );
+
+      ctx.lineTo(
+        0,
+        -55
+      );
+
+      ctx.lineTo(
+        25,
+        -42
+      );
+
+      ctx.lineTo(
+        18,
+        -25
+      );
+
+      ctx.lineTo(
+        -18,
+        -25
+      );
+
+      ctx.closePath();
+
+      ctx.fill();
+    }
   }
 
 
-  ctx.fillStyle=g;
+  ctx.restore();
+}
+
+
+/* =========================
+   ENNEMI
+========================= */
+
+function drawEnemy(e){
+
+  const x=e.x;
+  const y=e.y;
+
+  ctx.save();
+
+  ctx.translate(
+    x,
+    y
+  );
+
+
+  const s=
+    Math.sin(
+      performance.now()/180+x
+    )*2;
+
+
+  ctx.fillStyle='#22243a';
+
+  rr(
+    -20,
+    -42,
+    40,
+    45,
+    12
+  );
+
+
+  circle(
+    0,
+    -50,
+    17,
+    '#22243a'
+  );
+
+
+  circle(
+    -6,
+    -52,
+    3,
+    '#ffdf78'
+  );
+
+  circle(
+    6,
+    -52,
+    3,
+    '#ffdf78'
+  );
+
+
+  line(
+    -5,
+    -40,
+    5,
+    -40,
+    2,
+    '#e98a8a'
+  );
+
+
+  limb(
+    -15,
+    -35,
+    -30+s,
+    4,
+    10,
+    '#22243a',
+    '#111522'
+  );
+
+  limb(
+    15,
+    -35,
+    30-s,
+    4,
+    10,
+    '#22243a',
+    '#111522'
+  );
+
+
+  ctx.restore();
+}
+
+
+/* =========================
+   HUD
+========================= */
+
+function drawHUD(){
+
+  ctx.fillStyle='rgba(8,13,28,.86)';
+
+  rr(
+    22,
+    18,
+    330,
+    92,
+    18
+  );
+
+
+  text(
+    'MISSION 800$ — NIVEAU 1',
+    42,
+    43,
+    22,
+    '#ffd66b'
+  );
+
+
+  text(
+    `Récupère les CV : ${cvSpots.filter(c=>c.taken).length}/8`,
+    42,
+    76,
+    18,
+    '#fff'
+  );
+
+
+  ctx.fillStyle='rgba(8,13,28,.86)';
+
+  rr(
+    W-245,
+    18,
+    220,
+    74,
+    18
+  );
+
+
+  text(
+    `$ ${money} / $800`,
+    W-135,
+    55,
+    27,
+    money===800
+      ? '#7dff9b'
+      : '#fff',
+    'center',
+    '900'
+  );
+
+
+  /* BARRE */
+
+  const pct=money/800;
+
+  ctx.fillStyle='#1e293b';
+
+  rr(
+    24,
+    122,
+    W-48,
+    10,
+    5
+  );
+
+
+  ctx.fillStyle='#6fe58c';
+
+  rr(
+    24,
+    122,
+    (W-48)*pct,
+    10,
+    5
+  );
+
+
+  /* MESSAGE */
+
+  if(toastT>0){
+
+    ctx.fillStyle='rgba(0,0,0,.75)';
+
+    rr(
+      W/2-310,
+      H-72,
+      620,
+      42,
+      15
+    );
+
+
+    text(
+      toast,
+      W/2,
+      H-51,
+      15,
+      '#fff',
+      'center',
+      '700'
+    );
+  }
+
+
+  /* PRINCESSE */
+
+  if(
+    money===800 &&
+    !missionDone
+  ){
+
+    ctx.fillStyle='rgba(115,62,180,.94)';
+
+    rr(
+      princess.x-115,
+      princess.y-58,
+      230,
+      38,
+      14
+    );
+
+
+    text(
+      'APPROCHE-TOI ET APPUIE SUR E',
+      princess.x,
+      princess.y-39,
+      14,
+      '#fff',
+      'center',
+      '900'
+    );
+  }
+}
+
+
+/* =========================
+   RENDU DU NIVEAU
+========================= */
+
+function drawGame(){
+
+  drawSky();
+
+  drawCity();
+
+
+  /* PLATEFORMES */
+
+  for(
+    const p
+    of platforms.slice(1)
+  ){
+
+    ctx.fillStyle='#e9edf2';
+
+    rr(
+      p.x,
+      p.y,
+      p.w,
+      p.h,
+      7
+    );
+
+
+    ctx.fillStyle='#9aa6b8';
+
+    ctx.fillRect(
+      p.x,
+      p.y+10,
+      p.w,
+      6
+    );
+
+
+    if(p.label){
+
+      text(
+        p.label,
+        p.x+p.w/2,
+        p.y-12,
+        12,
+        '#ffe17b',
+        'center',
+        '900'
+      );
+    }
+  }
+
+
+  /* CV */
+
+  for(
+    const c
+    of cvSpots
+  ){
+
+    drawCV(c);
+  }
+
+
+  /* ENNEMIS */
+
+  for(
+    const e
+    of enemies
+  ){
+
+    drawEnemy(e);
+  }
+
+
+  /* PERSONNAGES */
+
+  drawHumanoid(
+    player.x+player.w/2,
+    player.y+player.h-10,
+    {
+      type:'gorilla',
+      face:player.face,
+      walk:player.vx,
+      scale:1
+    }
+  );
+
+
+  drawHumanoid(
+    kangarooF.x,
+    kangarooF.y+70,
+    {
+      type:'kangarooF',
+      walk:kangarooF.vx,
+      scale:1
+    }
+  );
+
+
+  drawHumanoid(
+    kangarooM.x,
+    kangarooM.y+70,
+    {
+      type:'kangarooM',
+      walk:kangarooM.vx,
+      scale:1.05
+    }
+  );
+
+
+  drawHumanoid(
+    princess.x+princess.w/2,
+    princess.y+78,
+    {
+      type:'princess',
+      face:-1,
+      walk:0,
+      scale:1
+    }
+  );
+
+
+  if(flash>0){
+
+    ctx.fillStyle=
+      `rgba(255,255,255,${flash*4})`;
+
+    ctx.fillRect(
+      0,
+      0,
+      W,
+      H
+    );
+  }
+
+
+  drawHUD();
+}
+
+
+/* =========================
+   SCENE PHOTO
+========================= */
+
+function drawPhoto(){
+
+  ctx.fillStyle='#111526';
 
   ctx.fillRect(
     0,
@@ -1724,1585 +2218,173 @@ function drawSky(){
     H
   );
 
-}
 
+  /* CADRE */
 
-function drawCity(){
+  ctx.fillStyle='#eee6d6';
 
-  for(const b of cityBuildings){
-
-    const x =
-      b.x-cameraX*.55;
-
-    const y =
-      470-b.h;
-
-
-    if(
-      x>W ||
-      x+b.w<0
-    ) continue;
-
-
-    ctx.fillStyle =
-      b.seed>.65
-        ? '#8a6d9e'
-        : '#657aa0';
-
-
-    ctx.fillRect(
-      x,
-      y,
-      b.w,
-      b.h
-    );
-
-
-    for(
-      let yy=y+18;
-      yy<465;
-      yy+=28
-    ){
-
-      for(
-        let xx=x+12;
-        xx<x+b.w-8;
-        xx+=25
-      ){
-
-        ctx.fillStyle =
-          (
-            (Math.floor(xx)+
-             Math.floor(yy))%3===0
-          )
-          ? '#ffe58a'
-          : '#34435d';
-
-
-        ctx.fillRect(
-          xx,
-          yy,
-          10,
-          13
-        );
-
-      }
-
-    }
-
-  }
-
-}
-
-
-function drawCloud(c){
-
-  const x =
-    c.x-cameraX*.25;
-
-  const y=c.y;
-
-
-  ctx.fillStyle='#ffffffcc';
-
-  ctx.beginPath();
-
-  ctx.arc(
-    x,
-    y,
-    18*c.s,
-    0,
-    Math.PI*2
+  rr(
+    190,
+    80,
+    900,
+    560,
+    12
   );
 
-  ctx.arc(
-    x+22*c.s,
-    y-8*c.s,
-    24*c.s,
-    0,
-    Math.PI*2
+
+  ctx.fillStyle='#caa77d';
+
+  ctx.fillRect(
+    220,
+    110,
+    840,
+    470
   );
 
-  ctx.arc(
-    x+48*c.s,
-    y,
-    17*c.s,
-    0,
-    Math.PI*2
+
+  text(
+    'SOUVENIR',
+    640,
+    145,
+    28,
+    '#4a2f2a',
+    'center',
+    '900'
   );
 
-  ctx.fill();
 
-}
+  /* COUPLES */
 
+  drawMiniPerson(
+    390,
+    450,
+    '#493c68',
+    '#d8a07d',
+    '#2b2035'
+  );
 
-function drawBackground(){
-
-  drawSky();
-
-
-  if(level===1){
-
-    for(const c of clouds){
-
-      drawCloud(c);
-
-    }
-
-    drawCity();
-
-  }
-
-  else{
-
-    for(const c of clouds){
-
-      drawCloud(c);
-
-    }
+  drawMiniPerson(
+    510,
+    450,
+    '#c26b91',
+    '#d8a07d',
+    '#4b263b'
+  );
 
 
-    ctx.fillStyle =
-      level===2
-        ? '#d7b27a'
-        : '#b5d68d';
+  drawMiniPerson(
+    750,
+    450,
+    '#6b8cbe',
+    '#c98e6c',
+    '#1f263c'
+  );
+
+  drawMiniPerson(
+    870,
+    450,
+    '#d29b52',
+    '#b97955',
+    '#4a3027'
+  );
 
 
-    ctx.fillRect(
-      0,
-      420,
-      W,
-      80
-    );
+  line(
+    450,
+    390,
+    480,
+    390,
+    8,
+    '#fff'
+  );
 
-  }
-
-}
-
-
-/* =========================================================
-   PLATEFORMES
-   ========================================================= */
-
-function drawPlatforms(){
-
-  for(const p of platforms){
-
-    const x =
-      p.x-cameraX;
+  line(
+    810,
+    390,
+    840,
+    390,
+    8,
+    '#fff'
+  );
 
 
-    if(
-      x+p.w<0 ||
-      x>W
-    ) continue;
+  /* DECHIRURE */
 
+  if(photoT>1.5){
 
-    ctx.fillStyle =
-      p.type==='scaffold'
-        ? '#8a5a2b'
-        : p.type==='roof'
-          ? '#4e526e'
-          : p.type==='park'
-            ? '#5eaa55'
-            : '#4b7f49';
-
-
-    ctx.fillRect(
-      x,
-      p.y,
-      p.w,
-      p.h
-    );
-
-
-    if(
-      p.type==='scaffold'
-    ){
-
-      ctx.strokeStyle='#c77b35';
-
-      ctx.lineWidth=5;
-
-      ctx.strokeRect(
-        x+4,
-        p.y+4,
-        p.w-8,
-        p.h-8
+    const p=
+      clamp(
+        (photoT-1.5)/1.4,
+        0,
+        1
       );
 
 
-      for(
-        let xx=x+20;
-        xx<x+p.w;
-        xx+=50
-      ){
+    ctx.strokeStyle='#422c29';
+    ctx.lineWidth=5;
 
-        ctx.beginPath();
-
-        ctx.moveTo(
-          xx,
-          p.y
-        );
-
-        ctx.lineTo(
-          xx,
-          p.y+p.h
-        );
-
-        ctx.stroke();
-
-      }
-
-    }
-
-  }
-
-}
-
-
-/* =========================================================
-   CV ET BILLETS
-   ========================================================= */
-
-function drawItem(it){
-
-  if(it.got) return;
-
-
-  const x=it.x-cameraX;
-
-  const y=
-    it.y+
-    Math.sin(it.bob)*5;
-
-
-  if(it.type==='cv'){
-
-    ctx.save();
-
-    ctx.translate(
-      x+15,
-      y+9
-    );
-
-    ctx.rotate(-.08);
-
-
-    ctx.fillStyle='#fff';
-
-    ctx.fillRect(
-      -15,
-      -9,
-      30,
-      18
-    );
-
-
-    ctx.fillStyle='#d7cde0';
-
-    ctx.fillRect(
-      -10,
-      -5,
-      20,
-      2
-    );
-
-
-    ctx.fillRect(
-      -10,
-      0,
-      14,
-      2
-    );
-
-
-    ctx.fillStyle='#ffd43b';
-
-    ctx.fillRect(
-      8,
-      -7,
-      4,
-      14
-    );
-
-
-    ctx.restore();
-
-  }
-
-  else{
-
-    ctx.fillStyle='#74b44c';
-
-    ctx.fillRect(
-      x,
-      y,
-      24,
-      24
-    );
-
-
-    ctx.fillStyle='#fff';
-
-    ctx.font='bold 10px Arial';
-
-    ctx.fillText(
-      '$40',
-      x+2,
-      y+15
-    );
-
-  }
-
-}
-
-
-/* =========================================================
-   OBSTACLES VISUELS
-   ========================================================= */
-
-function drawHazard(h){
-
-  const x=h.x-cameraX;
-  const y=h.y;
-
-
-  if(h.type==='cone'){
-
-    ctx.fillStyle='#ff7a45';
 
     ctx.beginPath();
 
     ctx.moveTo(
-      x+h.w/2,
-      y
+      610,
+      110
     );
 
     ctx.lineTo(
-      x+h.w,
-      y+h.h
+      580+60*p,
+      220
     );
 
     ctx.lineTo(
-      x,
-      y+h.h
+      630-80*p,
+      340
     );
 
-    ctx.closePath();
-
-    ctx.fill();
-
-
-    ctx.fillStyle='#fff';
-
-    ctx.fillRect(
-      x+8,
-      y+h.h-14,
-      h.w-16,
-      5
+    ctx.lineTo(
+      580+120*p,
+      470
     );
 
-  }
-
-
-  else if(h.type==='car'){
-
-    ctx.fillStyle='#9b3d4d';
-
-    ctx.fillRect(
-      x,
-      y+12,
-      h.w,
-      h.h-12
+    ctx.lineTo(
+      620-100*p,
+      580
     );
 
+    ctx.stroke();
 
-    ctx.fillStyle='#6fbee9';
-
-    ctx.fillRect(
-      x+12,
-      y+2,
-      h.w-24,
-      18
-    );
-
-
-    ctx.fillStyle='#151522';
 
     ctx.beginPath();
 
-    ctx.arc(
-      x+18,
-      y+h.h,
-      8,
-      0,
-      7
+    ctx.moveTo(
+      610,
+      110
     );
 
-    ctx.arc(
-      x+h.w-18,
-      y+h.h,
-      8,
-      0,
-      7
+    ctx.lineTo(
+      650-40*p,
+      250
     );
 
-    ctx.fill();
+    ctx.lineTo(
+      600+100*p,
+      380
+    );
 
+    ctx.lineTo(
+      670-130*p,
+      580
+    );
+
+    ctx.stroke();
   }
 
 
-  else if(h.type==='barrel'){
+  /* TEXTE FINAL */
 
-    ctx.fillStyle='#a66a32';
+  if(photoT>3.4){
 
-    ctx.fillRect(
-      x,
-      y,
-      h.w,
-      h.h
-    );
-
-
-    ctx.strokeStyle='#6b3d1b';
-
-    ctx.lineWidth=5;
-
-    ctx.strokeRect(
-      x+4,
-      y+4,
-      h.w-8,
-      h.h-8
-    );
-
-  }
-
-
-  else{
-
-    ctx.fillStyle='#777';
-
-    ctx.fillRect(
-      x,
-      y,
-      h.w,
-      h.h
-    );
-
-
-    ctx.fillStyle='#ffb000';
-
-    ctx.fillRect(
-      x+8,
-      y+10,
-      h.w-16,
-      10
-    );
-
-  }
-
-}
-
-
-/* =========================================================
-   OUTILS DE DESSIN
-   ========================================================= */
-
-function limb(
-  x1,
-  y1,
-  x2,
-  y2,
-  w=8,
-  color='#333'
-){
-
-  ctx.strokeStyle=color;
-
-  ctx.lineWidth=w;
-
-  ctx.lineCap='round';
-
-  ctx.beginPath();
-
-  ctx.moveTo(
-    x1,
-    y1
-  );
-
-  ctx.lineTo(
-    x2,
-    y2
-  );
-
-  ctx.stroke();
-
-}
-
-
-/* =========================================================
-   GORILLE
-   ========================================================= */
-
-function drawGorilla(
-  x,
-  y,
-  dir,
-  anim
-){
-
-  ctx.save();
-
-  ctx.translate(
-    x,
-    y
-  );
-
-  ctx.scale(
-    dir,
-    1
-  );
-
-
-  const walk =
-    Math.sin(anim*1.7)*8;
-
-
-  /* Corps */
-
-  ctx.fillStyle='#2a2022';
-
-  ctx.beginPath();
-
-  ctx.ellipse(
-    20,
-    42,
-    24,
-    27,
-    0,
-    0,
-    7
-  );
-
-  ctx.fill();
-
-
-  /* Tête */
-
-  ctx.fillStyle='#46343a';
-
-  ctx.beginPath();
-
-  ctx.ellipse(
-    20,
-    18,
-    18,
-    17,
-    0,
-    0,
-    7
-  );
-
-  ctx.fill();
-
-
-  /* Face volontairement moche */
-
-  ctx.fillStyle='#171316';
-
-  ctx.beginPath();
-
-  ctx.ellipse(
-    20,
-    21,
-    24,
-    13,
-    0,
-    0,
-    7
-  );
-
-  ctx.fill();
-
-
-  /* Yeux */
-
-  ctx.fillStyle='#ffdb55';
-
-  ctx.fillRect(
-    9,
-    16,
-    5,
-    4
-  );
-
-  ctx.fillRect(
-    26,
-    16,
-    5,
-    4
-  );
-
-
-  ctx.fillStyle='#111';
-
-  ctx.fillRect(
-    11,
-    17,
-    2,
-    2
-  );
-
-  ctx.fillRect(
-    27,
-    17,
-    2,
-    2
-  );
-
-
-  /* Bouche */
-
-  ctx.fillStyle='#8b5b62';
-
-  ctx.beginPath();
-
-  ctx.ellipse(
-    20,
-    27,
-    10,
-    6,
-    0,
-    0,
-    7
-  );
-
-  ctx.fill();
-
-
-  /* Bras */
-
-  limb(
-    5,
-    42,
-    -2,
-    62,
-    13,
-    '#2a2022'
-  );
-
-  limb(
-    35,
-    42,
-    43,
-    61,
-    13,
-    '#2a2022'
-  );
-
-
-  /* Jambes */
-
-  limb(
-    12,
-    62,
-    8+walk/2,
-    75,
-    14,
-    '#2a2022'
-  );
-
-  limb(
-    28,
-    62,
-    34-walk/2,
-    75,
-    14,
-    '#2a2022'
-  );
-
-
-  ctx.restore();
-
-}
-
-
-/* =========================================================
-   PRINCESSE
-   ========================================================= */
-
-function drawPrincess(
-  x,
-  y,
-  dir,
-  anim
-){
-
-  ctx.save();
-
-  ctx.translate(
-    x,
-    y
-  );
-
-  ctx.scale(
-    dir,
-    1
-  );
-
-
-  const sway =
-    Math.sin(anim)*3;
-
-
-  /* Visage */
-
-  ctx.fillStyle='#f6c7b7';
-
-  ctx.beginPath();
-
-  ctx.arc(
-    21,
-    15,
-    12,
-    0,
-    7
-  );
-
-  ctx.fill();
-
-
-  /* Cheveux */
-
-  ctx.fillStyle='#5b382f';
-
-  ctx.beginPath();
-
-  ctx.arc(
-    21,
-    13,
-    14,
-    0,
-    3.2
-  );
-
-  ctx.fill();
-
-
-  /* Haut */
-
-  ctx.fillStyle='#f2a4bd';
-
-  ctx.fillRect(
-    8,
-    28,
-    26,
-    34
-  );
-
-
-  /* Grande robe */
-
-  ctx.fillStyle='#9f5bd4';
-
-  ctx.beginPath();
-
-  ctx.moveTo(
-    9,
-    28
-  );
-
-  ctx.lineTo(
-    34,
-    28
-  );
-
-  ctx.lineTo(
-    48,
-    75
-  );
-
-  ctx.lineTo(
-    -4,
-    75
-  );
-
-  ctx.closePath();
-
-  ctx.fill();
-
-
-  /* Bras */
-
-  limb(
-    11,
-    37,
-    4+sway,
-    54,
-    6,
-    '#f6c7b7'
-  );
-
-  limb(
-    32,
-    37,
-    39-sway,
-    54,
-    6,
-    '#f6c7b7'
-  );
-
-
-  /* Jambes */
-
-  limb(
-    14,
-    72,
-    11,
-    78,
-    7,
-    '#f6c7b7'
-  );
-
-  limb(
-    29,
-    72,
-    32,
-    78,
-    7,
-    '#f6c7b7'
-  );
-
-
-  /* Yeux */
-
-  ctx.fillStyle='#fff';
-
-  ctx.fillRect(
-    16,
-    13,
-    3,
-    3
-  );
-
-  ctx.fillRect(
-    26,
-    13,
-    3,
-    3
-  );
-
-
-  ctx.restore();
-
-}
-
-
-/* =========================================================
-   KANGOUROU FEMELLE
-   ========================================================= */
-
-function drawKangarooF(
-  x,
-  y,
-  dir,
-  anim
-){
-
-  ctx.save();
-
-  ctx.translate(
-    x,
-    y
-  );
-
-  ctx.scale(
-    dir,
-    1
-  );
-
-
-  ctx.fillStyle='#b66a47';
-
-  ctx.beginPath();
-
-  ctx.ellipse(
-    22,
-    39,
-    18,
-    27,
-    0,
-    0,
-    7
-  );
-
-  ctx.fill();
-
-
-  ctx.beginPath();
-
-  ctx.arc(
-    23,
-    15,
-    13,
-    0,
-    7
-  );
-
-  ctx.fill();
-
-
-  limb(
-    9,
-    55,
-    0,
-    74,
-    7,
-    '#b66a47'
-  );
-
-  limb(
-    32,
-    55,
-    44,
-    74,
-    7,
-    '#b66a47'
-  );
-
-  limb(
-    34,
-    35,
-    47,
-    42,
-    6,
-    '#b66a47'
-  );
-
-
-  /* Oreilles */
-
-  ctx.beginPath();
-
-  ctx.moveTo(
-    10,
-    8
-  );
-
-  ctx.lineTo(
-    4,
-    -8
-  );
-
-  ctx.lineTo(
-    14,
-    4
-  );
-
-  ctx.fill();
-
-
-  ctx.beginPath();
-
-  ctx.moveTo(
-    34,
-    8
-  );
-
-  ctx.lineTo(
-    41,
-    -8
-  );
-
-  ctx.lineTo(
-    43,
-    8
-  );
-
-  ctx.fill();
-
-
-  ctx.fillStyle='#222';
-
-  ctx.fillRect(
-    29,
-    12,
-    3,
-    3
-  );
-
-
-  ctx.restore();
-
-}
-
-
-/* =========================================================
-   KANGOUROU MUSCLÉ
-   ========================================================= */
-
-function drawKangarooM(
-  x,
-  y,
-  dir,
-  anim
-){
-
-  ctx.save();
-
-  ctx.translate(
-    x,
-    y
-  );
-
-  ctx.scale(
-    dir,
-    1
-  );
-
-
-  ctx.fillStyle='#8d553b';
-
-  ctx.beginPath();
-
-  ctx.ellipse(
-    24,
-    42,
-    23,
-    31,
-    0,
-    0,
-    7
-  );
-
-  ctx.fill();
-
-
-  ctx.beginPath();
-
-  ctx.arc(
-    24,
-    15,
-    14,
-    0,
-    7
-  );
-
-  ctx.fill();
-
-
-  /* Torse musclé */
-
-  ctx.fillStyle='#e0a67e';
-
-  ctx.fillRect(
-    8,
-    34,
-    32,
-    18
-  );
-
-
-  /* Bras énormes */
-
-  limb(
-    8,
-    37,
-    -3,
-    22,
-    8,
-    '#8d553b'
-  );
-
-  limb(
-    40,
-    37,
-    51,
-    22,
-    8,
-    '#8d553b'
-  );
-
-
-  /* Jambes */
-
-  limb(
-    11,
-    64,
-    1,
-    79,
-    9,
-    '#8d553b'
-  );
-
-  limb(
-    36,
-    64,
-    49,
-    79,
-    9,
-    '#8d553b'
-  );
-
-
-  /* Oreilles */
-
-  ctx.beginPath();
-
-  ctx.moveTo(
-    11,
-    8
-  );
-
-  ctx.lineTo(
-    5,
-    -8
-  );
-
-  ctx.lineTo(
-    17,
-    6
-  );
-
-  ctx.fill();
-
-
-  ctx.beginPath();
-
-  ctx.moveTo(
-    37,
-    8
-  );
-
-  ctx.lineTo(
-    45,
-    -8
-  );
-
-  ctx.lineTo(
-    45,
-    8
-  );
-
-  ctx.fill();
-
-
-  ctx.restore();
-
-}
-
-
-/* =========================================================
-   PNJ
-   ========================================================= */
-
-function drawNPC(n){
-
-  const x =
-    n.x-cameraX;
-
-
-  if(
-    x+n.w<0 ||
-    x>W
-  ) return;
-
-
-  if(n.type==='person'){
-
-    ctx.fillStyle='#333';
-
-    ctx.beginPath();
-
-    ctx.arc(
-      x+14,
-      n.y-4,
-      9,
-      0,
-      7
-    );
-
-    ctx.fill();
-
-
-    ctx.fillStyle='#e67e62';
-
-    ctx.fillRect(
-      x+5,
-      n.y+5,
-      18,
-      30
-    );
-
-
-    limb(
-      x+8,
-      n.y+34,
-      x+4,
-      n.y+49,
-      5,
-      '#333'
-    );
-
-    limb(
-      x+20,
-      n.y+34,
-      x+24,
-      n.y+49,
-      5,
-      '#333'
-    );
-
-  }
-
-
-  else if(n.type==='worker'){
-
-    /* Casque */
-
-    ctx.fillStyle='#ffd35c';
-
-    ctx.fillRect(
-      x+3,
-      n.y-5,
-      24,
-      8
-    );
-
-
-    ctx.fillStyle='#e4b19d';
-
-    ctx.beginPath();
-
-    ctx.arc(
-      x+15,
-      n.y+5,
-      8,
-      0,
-      7
-    );
-
-    ctx.fill();
-
-
-    ctx.fillStyle='#2e6d8f';
-
-    ctx.fillRect(
-      x+5,
-      n.y+14,
-      20,
-      35
-    );
-
-
-    limb(
-      x+9,
-      n.y+49,
-      x+5,
-      n.y+75,
-      6,
-      '#333'
-    );
-
-    limb(
-      x+21,
-      n.y+49,
-      x+25,
-      n.y+75,
-      6,
-      '#333'
-    );
-
-  }
-
-
-  else if(n.type==='princess'){
-
-    drawPrincess(
-      n.x,
-      n.y,
-      n.dir,
-      n.anim
-    );
-
-  }
-
-
-  else if(n.type==='kangarooF'){
-
-    drawKangarooF(
-      n.x,
-      n.y,
-      n.dir,
-      n.anim
-    );
-
-  }
-
-
-  else if(n.type==='kangarooM'){
-
-    drawKangarooM(
-      n.x,
-      n.y,
-      n.dir,
-      n.anim
-    );
-
-  }
-
-}
-
-
-/* =========================================================
-   JOUEUR À L'ÉCRAN
-   ========================================================= */
-
-function drawPlayer(){
-
-  if(
-    player.inv>0 &&
-    Math.floor(player.inv*12)%2===0
-  ) return;
-
-
-  drawGorilla(
-    player.x-cameraX,
-    player.y,
-    player.dir,
-    player.anim
-  );
-
-}
-
-
-/* =========================================================
-   PARTICULES
-   ========================================================= */
-
-function drawParticles(){
-
-  for(const p of particles){
-
-    ctx.globalAlpha =
-      Math.max(
-        0,
-        p.life/p.max
-      );
-
-
-    ctx.fillStyle=p.color;
-
-
-    ctx.fillRect(
-      p.x-cameraX,
-      p.y,
-      p.size,
-      p.size
-    );
-
-  }
-
-
-  ctx.globalAlpha=1;
-
-}
-
-
-/* =========================================================
-   NIVEAU 3
-   ========================================================= */
-
-function drawLevel3Effects(){
-
-  if(level!==3) return;
-
-
-  ctx.fillStyle='#fff';
-
-  ctx.font='900 20px Arial';
-
-  ctx.fillText(
-    '800 $',
-    760-cameraX,
-    360
-  );
-
-
-  ctx.fillStyle='#ffffffaa';
-
-  ctx.font='14px Arial';
-
-  ctx.fillText(
-    'Rends l’argent à la princesse avec E',
-    720-cameraX,
-    385
-  );
-
-}
-
-
-/* =========================================================
-   RENDU
-   ========================================================= */
-
-function draw(){
-
-  drawBackground();
-
-  drawPlatforms();
-
-
-  for(const h of hazards){
-
-    drawHazard(h);
-
-  }
-
-
-  for(const it of items){
-
-    drawItem(it);
-
-  }
-
-
-  for(const n of npcs){
-
-    drawNPC(n);
-
-  }
-
-
-  drawPlayer();
-
-  drawParticles();
-
-  drawLevel3Effects();
-
-}
-
-
-/* =========================================================
-   CAMÉRA
-   ========================================================= */
-
-function cameraFollow(){
-
-  const target =
-    player.x-W*.35;
-
-
-  const wanted =
-    Math.max(
-      0,
-      Math.min(
-        worldW-W,
-        target
-      )
-    );
-
-
-  cameraX +=
-    (wanted-cameraX)*.12;
-
-}
-
-
-/* =========================================================
-   ACTION E
-   ========================================================= */
-
-function action(){
-
-  if(
-    level===3 &&
-    state.phase==='play'
-  ){
-
-    const pr =
-      npcs.find(
-        n=>n.type==='princess'
-      );
-
-
-    if(
-      pr &&
-      Math.abs(
-        (player.x+player.w/2)-
-        (pr.x+pr.w/2)
-      )<120
-    ){
-
-      state.phase='ending';
-
-      endingSequence();
-
-    }
-
-    else{
-
-      toast(
-        'Approche-toi de la princesse !'
-      );
-
-    }
-
-  }
-
-}
-
-
-/* =========================================================
-   FIN DE L'HISTOIRE
-   ========================================================= */
-
-function endingSequence(){
-
-  showOverlay(
-
-    'MISSION ACCOMPLIE ❤️',
-
-    'Le gorille arrive enfin avec les 800$. Il les rend à la princesse. La vieille photo se fissure… puis chacun reprend sa route.',
-
-    'VOIR LA FIN',
-
-    ()=>{
-
-      hideOverlay();
-
-      runFinale();
-
-    }
-
-  );
-
-}
-
-
-function runFinale(){
-
-  state.phase='finale';
-
-
-  let t=0;
-
-  const start=performance.now();
-
-
-  function finale(now){
-
-    t=(now-start)/1000;
-
-
-    draw();
-
-
-    ctx.save();
-
-
-    ctx.fillStyle='#08060dcc';
+    ctx.fillStyle='rgba(20,14,18,.75)';
 
     ctx.fillRect(
       0,
@@ -3312,395 +2394,190 @@ function runFinale(){
     );
 
 
-    ctx.translate(
+    text(
+      'BONNE CONTINUATION, BRAD PITT.',
       W/2,
-      H/2
+      H/2,
+      38,
+      '#fff',
+      'center',
+      '900'
     );
 
 
-    /* ÉTAPE 1 : IL REND LES 800$ */
-
-    if(t<2.5){
-
-      ctx.fillStyle='#fff';
-
-      ctx.font='900 34px Arial';
-
-      ctx.textAlign='center';
-
-      ctx.fillText(
-        'IL REND LES 800$',
-        0,
-        -70
-      );
-
-
-      drawGorilla(
-        -90,
-        0,
-        1,
-        t*5
-      );
-
-
-      drawPrincess(
-        45,
-        0,
-        -1,
-        t*5
-      );
-
-
-      ctx.fillStyle='#74b44c';
-
-      ctx.fillRect(
-        -18,
-        -30,
-        36,
-        22
-      );
-
-
-      ctx.fillStyle='#fff';
-
-      ctx.font='bold 12px Arial';
-
-      ctx.fillText(
-        '$800',
-        0,
-        -14
-      );
-
-    }
-
-
-    /* ÉTAPE 2 : PHOTO QUI SE CASSE */
-
-    else if(t<5){
-
-      ctx.fillStyle='#fff';
-
-      ctx.font='900 38px Arial';
-
-      ctx.textAlign='center';
-
-      ctx.fillText(
-        'CRAC.',
-        0,
-        -100
-      );
-
-
-      ctx.strokeStyle='#fff';
-
-      ctx.lineWidth=4;
-
-
-      ctx.beginPath();
-
-      ctx.moveTo(
-        -130,
-        -150
-      );
-
-      ctx.lineTo(
-        -20,
-        -30
-      );
-
-      ctx.lineTo(
-        -80,
-        100
-      );
-
-      ctx.lineTo(
-        15,
-        20
-      );
-
-      ctx.lineTo(
-        120,
-        130
-      );
-
-      ctx.stroke();
-
-
-      ctx.font='700 20px Arial';
-
-      ctx.fillText(
-        'La photo se casse.',
-        0,
-        155
-      );
-
-    }
-
-
-    /* ÉTAPE 3 : CHACUN DE SON CÔTÉ */
-
-    else{
-
-      ctx.fillStyle='#fff';
-
-      ctx.font='900 32px Arial';
-
-      ctx.textAlign='center';
-
-      ctx.fillText(
-        'CHACUN REPREND SA ROUTE',
-        0,
-        -155
-      );
-
-
-      drawPrincess(
-        -190,
-        20,
-        -1,
-        t*4
-      );
-
-
-      drawKangarooM(
-        -70,
-        20,
-        1,
-        t*4
-      );
-
-
-      drawGorilla(
-        70,
-        20,
-        1,
-        t*4
-      );
-
-
-      drawKangarooF(
-        190,
-        20,
-        -1,
-        t*4
-      );
-
-
-      ctx.font='800 18px Arial';
-
-
-      ctx.fillText(
-        'Bonne continuation Redピt ✌️',
-        0,
-        155
-      );
-
-    }
-
-
-    ctx.restore();
-
-
-    if(t<8){
-
-      requestAnimationFrame(
-        finale
-      );
-
-    }
-
-    else{
-
-      state.phase='done';
-
-
-      showOverlay(
-
-        'FIN 🎬',
-
-        'Les 800$ sont rendus. La photo est brisée. Le gorille et la princesse poursuivent chacun leur chemin… avec leurs nouveaux compagnons.',
-
-        'REJOUER',
-
-        ()=>{
-
-          resetLevel(1);
-
-          hideOverlay();
-
-        }
-
-      );
-
-    }
-
+    text(
+      '💔  La photo se déchire… les couples se forment.',
+      W/2,
+      H/2+55,
+      18,
+      '#ffd6e8',
+      'center',
+      '700'
+    );
   }
-
-
-  requestAnimationFrame(
-    finale
-  );
-
 }
 
 
-/* =========================================================
-   BOUCLE DU JEU
-   ========================================================= */
+/* =========================
+   PETITS PERSONNAGES PHOTO
+========================= */
 
-function loop(now){
+function drawMiniPerson(
+  x,
+  y,
+  shirt,
+  skin,
+  hair
+){
 
-  const dt =
-    Math.min(
-      .033,
-      (now-last)/1000 || .016
-    );
+  circle(
+    x,
+    y-65,
+    24,
+    skin
+  );
 
 
-  last=now;
+  ctx.fillStyle=hair;
+
+  ctx.beginPath();
+
+  ctx.arc(
+    x,
+    y-70,
+    26,
+    Math.PI,
+    Math.PI*2
+  );
+
+  ctx.fill();
+
+
+  ctx.fillStyle=shirt;
+
+  ctx.beginPath();
+
+  ctx.moveTo(
+    x-22,
+    y-38
+  );
+
+  ctx.lineTo(
+    x+22,
+    y-38
+  );
+
+  ctx.lineTo(
+    x+35,
+    y+35
+  );
+
+  ctx.lineTo(
+    x-35,
+    y+35
+  );
+
+  ctx.closePath();
+
+  ctx.fill();
+
+
+  limb(
+    x-15,
+    y-35,
+    x-32,
+    y,
+    12,
+    skin,
+    hair
+  );
+
+  limb(
+    x+15,
+    y-35,
+    x+32,
+    y,
+    12,
+    skin,
+    hair
+  );
+
+
+  limb(
+    x-13,
+    y+30,
+    x-17,
+    y+70,
+    14,
+    skin,
+    hair
+  );
+
+  limb(
+    x+13,
+    y+30,
+    x+17,
+    y+70,
+    14,
+    skin,
+    hair
+  );
+}
+
+
+/* =========================
+   RENDU
+========================= */
+
+function draw(){
+
+  ctx.clearRect(
+    0,
+    0,
+    W,
+    H
+  );
 
 
   if(
-    state.phase==='play'
+    scene==='game' ||
+    scene==='complete'
   ){
 
-    movePlayer(dt);
+    drawGame();
 
-    updateItems(dt);
+  }else{
 
-    updateHazards(dt);
-
-    updateNPCs(dt);
-
-    updateParticles(dt);
-
-    cameraFollow();
-
-    checkProgress();
-
+    drawPhoto();
   }
-
-  else if(
-    state.phase==='transition' ||
-    state.phase==='over'
-  ){
-
-    updateParticles(dt);
-
-  }
-
-
-  draw();
-
-
-  requestAnimationFrame(loop);
-
 }
 
 
-/* =========================================================
-   CLAVIER
-   ========================================================= */
+/* =========================
+   BOUCLE DU JEU
+========================= */
 
-window.addEventListener(
-  'keydown',
-  e=>{
-
-    if(
-      [
-        'ArrowLeft',
-        'ArrowRight',
-        'ArrowUp',
-        'Space',
-        'KeyA',
-        'KeyD',
-        'KeyW',
-        'KeyE'
-      ].includes(e.code)
-    ){
-
-      e.preventDefault();
-
-    }
+let last=
+  performance.now();
 
 
-    keys.add(e.code);
+function loop(now){
 
-
-    if(
-      e.code==='KeyE' &&
-      !e.repeat
-    ){
-
-      action();
-
-    }
-
-  }
-);
-
-
-window.addEventListener(
-  'keyup',
-  e=>{
-
-    keys.delete(e.code);
-
-  }
-);
-
-
-/* =========================================================
-   BOUTONS TACTILES
-   ========================================================= */
-
-document
-  .querySelectorAll('.ctrl')
-  .forEach(b=>{
-
-    const k=b.dataset.key;
-
-
-    b.addEventListener(
-      'pointerdown',
-      e=>{
-
-        e.preventDefault();
-
-        keys.add(k);
-
-
-        if(k==='KeyE'){
-
-          action();
-
-        }
-
-      }
+  const dt=
+    Math.min(
+      .033,
+      (now-last)/1000
     );
 
+  last=now;
 
-    [
-      'pointerup',
-      'pointercancel',
-      'pointerleave'
-    ].forEach(ev=>{
+  update(dt);
 
-      b.addEventListener(
-        ev,
-        ()=>keys.delete(k)
-      );
+  draw();
 
-    });
+  requestAnimationFrame(loop);
+}
 
-  });
-
-
-/* =========================================================
-   DÉMARRAGE
-   ========================================================= */
-
-resetLevel(1);
 
 requestAnimationFrame(loop);
 
